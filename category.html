@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Document</title>
+</head>
+<style>
+  table,
+  th,
+  td {
+    border: 1px solid black;
+    padding: 5px;
+    color: white;
+    text-align: center;
+  }
+
+  .bg {
+    background-image: url(https://www.ana.co.jp/japan-travel-planner/recommendation/itinerary23/img/spot1-1.jpg);
+  }
+</style>
+
+<body class="bg">
+  <input type="text" placeholder="Category Name" id="name" style="margin-top: 11px" />
+  <button type="button" id="save" onclick="SaveCategory()">Save</button>
+  <table style="margin-top: 11px">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Category</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="result">
+      <th></th>
+      <th></th>
+      <th><button type="button">Delete</button></th>
+    </tbody>
+  </table>
+
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+  <script>
+    const GetCategory = async () => {
+      await axios
+        .get("http://localhost:3000/category")
+        .then((response) => {
+          console.log(response.data);
+          const categories = response.data;
+          let bucket = "";
+          categories.forEach((category, index) => {
+            bucket += `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td>${category.name}</td>            
+                    <td>
+                      <button onclick="Delete('${category.name}')" type="button">Delete</button>
+                      <button onclick="EditStuff('${category.name}')" type="button">Update</button>
+                    </td>
+                </tr>`;
+          });
+          document.getElementById("result").innerHTML = bucket;
+        })
+        .catch((error) => {
+          alert(error.message);
+        });
+    };
+
+    GetCategory();
+
+    const SaveCategory = async () => {
+      let name = document.getElementById("name").value;
+      await axios
+        .post("http://localhost:3000/category", {
+          name: name,
+        })
+        .then((Response) => {
+          console.log(Response);
+        })
+        .catch((error) => {
+          alert(error.message);
+        });
+    };
+  </script>
+</body>
+
+</html>
