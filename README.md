@@ -16,14 +16,12 @@ json-server --watch database.json --port 3000
 
 2. Clone Project
 
-
 ```bash
 git clone https://github.com/kanglerian/stuff-management.git
 cd stuff-management
 ```
 
 3. Start Project with Live Server Extensions.
-
 
 ### License
 
