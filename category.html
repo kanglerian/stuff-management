@@ -2,86 +2,133 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Document</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stuff Management</title>
+  <style>
+    table,
+    td,
+    th {
+      border: 1px solid black;
+      padding: 5px;
+    }
+  </style>
 </head>
-<style>
-  table,
-  th,
-  td {
-    border: 1px solid black;
-    padding: 5px;
-    color: white;
-    text-align: center;
-  }
 
-  .bg {
-    background-image: url(https://www.ana.co.jp/japan-travel-planner/recommendation/itinerary23/img/spot1-1.jpg);
-  }
-</style>
-
-<body class="bg">
-  <input type="text" placeholder="Category Name" id="name" style="margin-top: 11px" />
-  <button type="button" id="save" onclick="SaveCategory()">Save</button>
-  <table style="margin-top: 11px">
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Category</th>
-        <th>Action</th>
-      </tr>
-    </thead>
-    <tbody id="result">
-      <th></th>
-      <th></th>
-      <th><button type="button">Delete</button></th>
-    </tbody>
-  </table>
-
+<body>
+  <main>
+    <nav>
+      <ul style="display: flex;gap: 30px">
+        <li>
+          <a href="./index.html">Beranda</a>
+        </li>
+        <li>
+          <a href="./category.html">Kategori</a>
+        </li>
+      </ul>
+    </nav>
+    <section>
+      <input type="text" id="name" placeholder="Name of Category">
+      <button type="button" onclick="SaveCategory()" id="trigger">Save</button>
+    </section>
+    <table style="margin-top: 15px">
+      <thead>
+        <tr>
+          <th>No</th>
+          <th>Name of Category</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="result"></tbody>
+    </table>
+  </main>
   <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-
   <script>
-    const GetCategory = async () => {
-      await axios
-        .get("http://localhost:3000/category")
+    const GetCategories = async () => {
+      await axios.get(`http://localhost:3000/categories`)
         .then((response) => {
-          console.log(response.data);
           const categories = response.data;
-          let bucket = "";
+          let bucket = '';
           categories.forEach((category, index) => {
             bucket += `
-                <tr>
-                    <td>${index + 1}</td>
-                    <td>${category.name}</td>            
-                    <td>
-                      <button onclick="Delete('${category.name}')" type="button">Delete</button>
-                      <button onclick="EditStuff('${category.name}')" type="button">Update</button>
-                    </td>
-                </tr>`;
+            <tr>
+              <td>${index + 1}</td>
+              <td>${category.name}</td>
+              <td>
+                <button type="button" onclick="EditCategory('${category.id}')">Edit</button>
+                <button type="button" onclick="DeleteCategory('${category.id}')">Delete</button>
+              </td>
+            </tr>`
           });
-          document.getElementById("result").innerHTML = bucket;
+          document.getElementById('result').innerHTML = bucket;
+          console.log(response);
         })
         .catch((error) => {
-          alert(error.message);
+          console.log(error);
         });
-    };
-
-    GetCategory();
+    }
+    GetCategories();
 
     const SaveCategory = async () => {
-      let name = document.getElementById("name").value;
-      await axios
-        .post("http://localhost:3000/category", {
-          name: name,
-        })
-        .then((Response) => {
-          console.log(Response);
+      const nameVal = document.getElementById('name').value;
+      const data = {
+        name: nameVal,
+      }
+      await axios.post(`http://localhost:3000/categories`, data)
+        .then((response) => {
+          console.log(response);
+          document.getElementById('name').value = '';
+          GetCategories();
         })
         .catch((error) => {
-          alert(error.message);
+          console.log(error);
         });
-    };
+    }
+
+    const EditCategory = async (id) => {
+      await axios.get(`http://localhost:3000/categories/${id}`)
+        .then((response) => {
+          const category = response.data;
+          document.getElementById('name').value = category.name;
+          document.getElementById('trigger').innerText = 'update';
+          document.getElementById('trigger').setAttribute('onclick', `UpdateCategory('${id}')`);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    }
+
+    const UpdateCategory = async (id) => {
+      const nameVal = document.getElementById('name').value;
+      const data = {
+        name: nameVal,
+      }
+      await axios.patch(`http://localhost:3000/categories/${id}`, data)
+        .then((response) => {
+          console.log(response);
+          document.getElementById('name').value = '';
+          document.getElementById('trigger').innerText = 'save';
+          document.getElementById('trigger').setAttribute('onclick', `SaveCategory()`);
+          GetCategories();
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    }
+
+    const DeleteCategory = async (id) => {
+      const confirmed = confirm('Apakah anda yakin akan menghapus?');
+      if (confirmed) {
+        await axios.delete(`http://localhost:3000/categories/${id}`)
+          .then((response) => {
+            console.log(response);
+            GetCategories();
+          })
+          .catch((error) => {
+            console.log(error);
+          })
+      }
+    }
   </script>
 </body>
 
